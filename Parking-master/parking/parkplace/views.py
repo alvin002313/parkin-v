@@ -4,7 +4,7 @@ import json
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import *
@@ -26,18 +26,23 @@ def getdata(request):
         data = json.loads(a)
         status = data['data']
         check = Place.objects.filter(device_name=data['deviceName']).last()
+        print(data)
         check_brone = check.reserves_set.all()
         def get_brone_or_not():
             for i in check_brone:
                 if i.start_date <= now <= i.end_date:
-                    print(i.start_date,'<=',now,'<=',i.endate)
+                    print(i.start_date,'<=',now,'<=',i.end_date)
                     return True
         def get_status():
             if status== 'MA==' and not get_brone_or_not():
                 print('MA OLDU')
+                # check.bronetime_start = None
+                # check.bronetime_end = None
                 return 'free'
             elif status == 'MQ==' and not get_brone_or_not():
                 print('MQ OLDU')
+                # check.bronetime_start = None
+                # check.bronetime_end = None
                 return 'full'
             else:
                 return 'brone'
@@ -77,6 +82,7 @@ def brone(request,dev_name):
         if start <= now <=end:
             place.status = 'brone'
             place.save()
+
     return render (request, 'brone.html')
 
 def full(request):
